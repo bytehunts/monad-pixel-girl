@@ -44,23 +44,38 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </head>
 
-<body>
-  <h1>Monad Pixel Girl</h1>
-  <p>Supply: 555 • Free Mint</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monad Pixel Girl</title>
+  <!-- Ethers.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 40px;">
 
-  <img src="https://ipfs.io/ipfs/bafyb...qqr2i"
+  <h1>Monad Pixel Girl</h1>
+  <p id="supply">Supply: loading...</p>
+
+  <!-- NFT Image -->
+  <img src="https://ipfs.io/ipfs/bafybeihd7hq25nvqwsvuoxwecnwey5vmvds57m6vzspfrhwornyzgqqr2i"
        alt="Monad Pixel Girl"
        style="max-width:300px;border-radius:12px;margin:20px auto;display:block;" />
 
+  <!-- Buttons -->
   <button id="connectButton">Connect Wallet</button>
   <button id="mintButton" disabled>Mint</button>
 
-  <div id="status"></div>
+  <!-- Status -->
+  <div id="status" style="margin-top: 20px; font-weight: bold;"></div>
 
   <script>
     const CONTRACT_ADDRESS = "0x0986107f9029c93ad55fe8134fd222ddec0c9de8";
     const ABI = [
-      "function mint(uint256 amount) public"
+      "function mint(uint256 amount) public",
+      "function totalSupply() public view returns (uint256)",
+      "function maxSupply() public view returns (uint256)"
     ];
 
     let provider, signer, contract;
@@ -74,6 +89,7 @@
           contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
           document.getElementById("status").innerText = "✅ Wallet connected!";
           document.getElementById("mintButton").disabled = false;
+          await updateSupply();
         } catch (err) {
           document.getElementById("status").innerText = "❌ Connection failed: " + err.message;
         }
@@ -88,16 +104,35 @@
         document.getElementById("status").innerText = "⏳ Minting... " + tx.hash;
         await tx.wait();
         document.getElementById("status").innerText = "🎉 Mint successful! Tx: " + tx.hash;
+        await updateSupply();
       } catch (err) {
         document.getElementById("status").innerText = "❌ Mint failed: " + err.message;
       }
     }
+
+    async function updateSupply() {
+      try {
+        const total = await contract.totalSupply();
+        const max = await contract.maxSupply();
+        document.getElementById("supply").innerText =
+          `Supply: ${max - total} left • ${max} total`;
+      } catch (err) {
+        console.error("Supply fetch error:", err);
+      }
+    }
+
+    // auto-refresh supply every 10 seconds
+    setInterval(() => {
+      if (contract) updateSupply();
+    }, 10000);
 
     document.getElementById("connectButton").addEventListener("click", connectWallet);
     document.getElementById("mintButton").addEventListener("click", mintNFT);
   </script>
 </body>
 </html>
+
+
 
 
 
