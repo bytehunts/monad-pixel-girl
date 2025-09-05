@@ -49,21 +49,28 @@
     }
   </style>
 </head>
-<body>
-  <h1>Monad Pixel Girl</h1>
-  <img src="https://ipfs.io/ipfs/bafybeihd7hq25nvqwsvuoxwecnwey5vmvds57m6vzspfrhwornyzgqqr2i" alt="Monad Pixel Girl NFT">
-  <p>Supply: <span id="supply">loading...</span></p>
+<body class="bg-purple-950 text-white flex flex-col items-center justify-center min-h-screen">
+  <h1 class="text-4xl font-bold mb-4">Monad Pixel Girl</h1>
+  <p class="mb-6">Supply: 555 • Free Mint</p>
+  
+  <img src="https://ipfs.io/ipfs/bafybeihd7hq25nvqwsvuoxwecnwey5vmvds57m6vzspfrhwornyzgqqr2i" 
+       alt="Monad Pixel Girl" 
+       class="w-64 h-64 rounded-lg shadow-lg mb-6 border-2 border-purple-400">
 
-  <button id="connectButton">Connect Wallet</button>
-  <button id="mintButton" disabled>Mint</button>
+  <button id="connectButton" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded mb-2">
+    Connect Wallet
+  </button>
+  <button id="mintButton" disabled class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+    Mint
+  </button>
 
-  <div id="status"></div>
+  <div id="status" class="mt-4 text-sm"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
   <script>
     const CONTRACT_ADDRESS = "0x0986107f9029c93ad55fe8134fd222ddec0c9de8";
     const ABI = [
-      "function mint(uint256 amount) public",
-      "function totalSupply() public view returns (uint256)"
+      "function mint(uint256 amount) public"
     ];
 
     let provider, signer, contract;
@@ -75,25 +82,13 @@
           provider = new ethers.providers.Web3Provider(window.ethereum);
           signer = provider.getSigner();
           contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-
           document.getElementById("status").innerText = "✅ Wallet connected!";
           document.getElementById("mintButton").disabled = false;
-
-          updateSupply();
         } catch (err) {
           document.getElementById("status").innerText = "❌ Connection failed: " + err.message;
         }
       } else {
         alert("No wallet found. Please install MetaMask or OKX Wallet.");
-      }
-    }
-
-    async function updateSupply() {
-      try {
-        const supply = await contract.totalSupply();
-        document.getElementById("supply").innerText = supply.toString() + " / 555";
-      } catch (err) {
-        document.getElementById("supply").innerText = "Error loading";
       }
     }
 
@@ -103,7 +98,6 @@
         document.getElementById("status").innerText = "⏳ Minting... " + tx.hash;
         await tx.wait();
         document.getElementById("status").innerText = "🎉 Mint successful! Tx: " + tx.hash;
-        updateSupply();
       } catch (err) {
         document.getElementById("status").innerText = "❌ Mint failed: " + err.message;
       }
@@ -114,3 +108,4 @@
   </script>
 </body>
 </html>
+
