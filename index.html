@@ -1,81 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monad Pixel Girl Mint</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #2a003f;
-      color: white;
-      text-align: center;
-      padding: 40px;
-    }
-    h1 {
-      color: #d47aff;
-    }
-    button {
-      padding: 12px 20px;
-      margin: 10px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    #connectButton {
-      background: #6a0dad;
-      color: white;
-    }
-    #mintButton {
-      background: #d47aff;
-      color: black;
-    }
-    #status {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #ddd;
-    }
-  </style>
-<head>
-  <title>Monad Pixel Girl</title>
-  <!-- Ethers.js library -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-</head>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monad Pixel Girl</title>
-  <!-- Ethers.js library -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    img {
+      max-width: 300px;
+      margin: 20px auto;
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+    h1 {
+      font-size: 2rem;
+      margin: 10px 0;
+    }
+    p {
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+    button {
+      background: #6c5ce7;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 10px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #a29bfe;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #00ff9d;
+    }
+  </style>
 </head>
-<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 40px;">
-
+<body>
   <h1>Monad Pixel Girl</h1>
-  <p id="supply">Supply: loading...</p>
+  <img src="https://ipfs.io/ipfs/bafybeihd7hq25nvqwsvuoxwecnwey5vmvds57m6vzspfrhwornyzgqqr2i" alt="Monad Pixel Girl NFT">
+  <p>Supply: <span id="supply">loading...</span></p>
 
-  <!-- NFT Image -->
-  <img src="https://ipfs.io/ipfs/bafybeihd7hq25nvqwsvuoxwecnwey5vmvds57m6vzspfrhwornyzgqqr2i"
-       alt="Monad Pixel Girl"
-       style="max-width:300px;border-radius:12px;margin:20px auto;display:block;" />
-
-  <!-- Buttons -->
   <button id="connectButton">Connect Wallet</button>
   <button id="mintButton" disabled>Mint</button>
 
-  <!-- Status -->
-  <div id="status" style="margin-top: 20px; font-weight: bold;"></div>
+  <div id="status"></div>
 
   <script>
     const CONTRACT_ADDRESS = "0x0986107f9029c93ad55fe8134fd222ddec0c9de8";
     const ABI = [
       "function mint(uint256 amount) public",
-      "function totalSupply() public view returns (uint256)",
-      "function maxSupply() public view returns (uint256)"
+      "function totalSupply() public view returns (uint256)"
     ];
 
     let provider, signer, contract;
@@ -87,14 +75,25 @@
           provider = new ethers.providers.Web3Provider(window.ethereum);
           signer = provider.getSigner();
           contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
           document.getElementById("status").innerText = "✅ Wallet connected!";
           document.getElementById("mintButton").disabled = false;
-          await updateSupply();
+
+          updateSupply();
         } catch (err) {
           document.getElementById("status").innerText = "❌ Connection failed: " + err.message;
         }
       } else {
         alert("No wallet found. Please install MetaMask or OKX Wallet.");
+      }
+    }
+
+    async function updateSupply() {
+      try {
+        const supply = await contract.totalSupply();
+        document.getElementById("supply").innerText = supply.toString() + " / 555";
+      } catch (err) {
+        document.getElementById("supply").innerText = "Error loading";
       }
     }
 
@@ -104,35 +103,14 @@
         document.getElementById("status").innerText = "⏳ Minting... " + tx.hash;
         await tx.wait();
         document.getElementById("status").innerText = "🎉 Mint successful! Tx: " + tx.hash;
-        await updateSupply();
+        updateSupply();
       } catch (err) {
         document.getElementById("status").innerText = "❌ Mint failed: " + err.message;
       }
     }
-
-    async function updateSupply() {
-      try {
-        const total = await contract.totalSupply();
-        const max = await contract.maxSupply();
-        document.getElementById("supply").innerText =
-          `Supply: ${max - total} left • ${max} total`;
-      } catch (err) {
-        console.error("Supply fetch error:", err);
-      }
-    }
-
-    // auto-refresh supply every 10 seconds
-    setInterval(() => {
-      if (contract) updateSupply();
-    }, 10000);
 
     document.getElementById("connectButton").addEventListener("click", connectWallet);
     document.getElementById("mintButton").addEventListener("click", mintNFT);
   </script>
 </body>
 </html>
-
-
-
-
-
