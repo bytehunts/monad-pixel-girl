@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monad Pixel Girl Mint</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #2a003f;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #d47aff;
+    }
+    button {
+      padding: 12px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #connectButton {
+      background: #6a0dad;
+      color: white;
+    }
+    #mintButton {
+      background: #d47aff;
+      color: black;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Monad Pixel Girl</h1>
+  <p>Supply: 555 • Free Mint</p>
+
+  <button id="connectButton">Connect Wallet</button>
+  <button id="mintButton" disabled>Mint</button>
+
+  <div id="status"></div>
+
+  <script>
+    const CONTRACT_ADDRESS = "0x0986107f9029c93ad55fe8134fd222ddec0c9de8";
+    const ABI = [
+      "function mint(uint256 amount) public"
+    ];
+
+    let provider, signer, contract;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        try {
+          await ethereum.request({ method: "eth_requestAccounts" });
+          provider = new ethers.providers.Web3Provider(window.ethereum);
+          signer = provider.getSigner();
+          contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+          document.getElementById("status").innerText = "✅ Wallet connected!";
+          document.getElementById("mintButton").disabled = false;
+        } catch (err) {
+          document.getElementById("status").innerText = "❌ Connection failed: " + err.message;
+        }
+      } else {
+        alert("No wallet found. Please install MetaMask or OKX Wallet.");
+      }
+    }
+
+    async function mintNFT() {
+      try {
+        const tx = await contract.mint(1);
+        document.getElementById("status").innerText = "⏳ Minting... " + tx.hash;
+        await tx.wait();
+        document.getElementById("status").innerText = "🎉 Mint successful! Tx: " + tx.hash;
+      } catch (err) {
+        document.getElementById("status").innerText = "❌ Mint failed: " + err.message;
+      }
+    }
+
+    document.getElementById("connectButton").addEventListener("click", connectWallet);
+    document.getElementById("mintButton").addEventListener("click", mintNFT);
+  </script>
+</body>
+</html>
